@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Software Estimation Calculator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:oklch(96% .008 85);--ink:oklch(18% .01 85);--mute:oklch(45% .01 85);--line:oklch(84% .01 85);--r:999px;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:oklch(16% .008 85);--ink:oklch(95% .008 85);--mute:oklch(72% .01 85);--line:oklch(32% .01 85)}}
+:root[data-theme="dark"]{--bg:oklch(16% .008 85);--ink:oklch(95% .008 85);--mute:oklch(72% .01 85);--line:oklch(32% .01 85)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 "DM Sans",sans-serif}
+main{max-width:46rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem) clamp(1rem,4vw,2rem) 5rem}
+h1,h2,.big{font-family:"Bricolage Grotesque","DM Sans",sans-serif;letter-spacing:-.03em;line-height:1}
+h1{font-size:clamp(2.6rem,9vw,5rem);font-weight:800;margin:0 0 1rem}
+h2{font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 .5rem}
+p.lead{color:var(--mute);max-width:32rem;margin:0 0 clamp(1.5rem,5vw,3rem)}
+[hidden]{display:none!important}
+.mark{display:inline-block;margin:clamp(2rem,8vw,4rem) 0 0;padding:.45rem 1.2rem;border:2px solid var(--ink);border-radius:var(--r);font-size:.85rem;font-weight:500}
+.rise{animation:rise .6s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@media(prefers-reduced-motion:reduce){.rise{animation:none}}
+/* choices */
+.choice{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;text-align:left;font:inherit;color:inherit;background:none;border:2px solid var(--ink);border-radius:var(--r);padding:1.2rem 1.8rem;margin:0 0 .9rem;cursor:pointer;transition:background .25s,color .25s,transform .25s cubic-bezier(.16,1,.3,1)}
+.choice:hover,.choice:focus-visible{background:var(--ink);color:var(--bg);}
+.choice b{font:800 clamp(1.3rem,4vw,1.8rem)/1.1 "Bricolage Grotesque",sans-serif;display:block}
+.choice small{color:inherit;opacity:.7;font-size:.9rem}
+/* form */
+.back{font:inherit;background:none;border:2px solid var(--line);color:var(--ink);border-radius:var(--r);padding:.4rem 1.1rem;cursor:pointer;margin-bottom:2rem}
+.back:hover{border-color:var(--ink)}
+fieldset{border:0;padding:0;margin:0 0 2rem}
+legend{font:700 1.15rem "Bricolage Grotesque",sans-serif;padding:0;margin-bottom:.8rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem}
+.field{display:flex;flex-direction:column;gap:.3rem}
+label,.lab{font-weight:500;font-size:.92rem}
+.hint{font-size:.8rem;color:var(--mute)}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--ink);border-radius:var(--r);padding:.65rem 1.1rem;width:100%;min-height:2.9rem}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 1.3rem) 55%,calc(100% - .95rem) 55%;background-size:.4rem .4rem;background-repeat:no-repeat;padding-right:2.4rem}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.field.bad input,.field.bad select{border-style:dashed}
+.err{font-size:.82rem;font-weight:700;min-height:0}
+.err:empty{display:none}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:1rem;flex-wrap:wrap}
+.seg label{margin:0;cursor:pointer}
+.seg input{position:absolute;opacity:0;width:0;min-height:0}
+.seg span{display:block;padding:.35rem 1rem;border-radius:var(--r);font-size:.9rem;transition:background .2s,color .2s}
+.seg input:checked+span{background:var(--ink);color:var(--bg)}
+.seg input:focus-visible+span{outline:3px solid var(--ink);outline-offset:2px}
+.row{display:grid;grid-template-columns:5.5rem 1fr;gap:.6rem 1rem;align-items:start;padding:1rem 0;border-top:1px solid var(--line)}
+.row .name{font:700 1.3rem "Bricolage Grotesque",sans-serif;padding-top:.5rem}
+.row .name small{display:block;font:400 .72rem "DM Sans",sans-serif;color:var(--mute);letter-spacing:0}
+.cnt{display:grid;grid-template-columns:repeat(auto-fit,minmax(6rem,1fr));gap:.6rem}
+.cnt.three .one,.cnt:not(.three) .tri{display:none}
+.chk{display:flex;gap:.7rem;align-items:center;margin:0 0 1rem;cursor:pointer}
+.chk input{width:1.4rem;height:1.4rem;min-height:0;accent-color:var(--ink);border-radius:50%}
+.btns{display:flex;gap:.8rem;flex-wrap:wrap}
+.btn{font:700 1rem "DM Sans",sans-serif;border:2px solid var(--ink);border-radius:var(--r);padding:.9rem 2.2rem;cursor:pointer;transition:transform .25s cubic-bezier(.16,1,.3,1)}
+.btn.p{background:var(--ink);color:var(--bg)}.btn.s{background:none;color:var(--ink)}
+.btn:hover{opacity:.85}
+/* results */
+.out{margin-top:2.5rem;background:var(--ink);color:var(--bg);border-radius:2.5rem;padding:clamp(1.4rem,4vw,2.4rem)}
+.out h3{margin:0 0 1.2rem;font:700 1rem "DM Sans",sans-serif;opacity:.75;letter-spacing:.06em;text-transform:uppercase}
+.res{display:flex;flex-wrap:wrap;gap:.7rem}
+.res div{border:2px solid var(--bg);border-radius:var(--r);padding:.6rem 1.3rem;min-width:9rem;flex:1 1 9rem;animation:rise .5s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i,0)*80ms)}
+.res small{display:block;font-size:.76rem;opacity:.75}
+.res strong{font:800 1.6rem "Bricolage Grotesque",sans-serif;letter-spacing:-.02em}
+.note{font-size:.85rem;opacity:.75;margin:1rem 0 0}
+.drv{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.8rem}
+@media(max-width:34rem){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<section id="home">
+  <h1 class="rise">Software estimation calculator</h1>
+  <p class="lead rise" style="--i:1">Choose the type of calculation.</p>
+  <div id="choices"></div>
+  <p class="mark">Made by Albaraa Alghamdi - 2338455</p>
+</section>
+<section id="calc" hidden>
+  <button class="back" id="back" type="button">Back</button>
+  <div id="form"></div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const clean=n=>Number(Number(n).toPrecision(12));
+const fmt=n=>clean(n).toLocaleString('en-US',{maximumFractionDigits:10});
+const money=n=>"$"+clean(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:10});
+
+/* ---------- helpers ---------- */
+const F=(id,label,hint,extra='')=>`<div class="field" id="f_${id}"><label for="${id}">${label}</label><input id="${id}" type="number" inputmode="decimal" step="any" ${extra}><span class="hint">${hint||''}</span><span class="err" id="e_${id}" role="alert"></span></div>`;
+const S=(id,label,opts)=>`<div class="field"><label for="${id}">${label}</label><select id="${id}">${opts}</select></div>`;
+const O=(arr,sel)=>arr.map(([v,t])=>`<option value="${v}"${v===sel?' selected':''}>${t}</option>`).join('');
+const seg=(name,items)=>`<div class="seg" role="radiogroup">${items.map(([v,t],i)=>`<label><input type="radio" name="${name}" value="${v}"${i?'':' checked'}><span>${t}</span></label>`).join('')}</div>`;
+let bad=[];
+function setErr(id,msg){const f=$('#f_'+id);if(!f)return;f.classList.toggle('bad',!!msg);$('#e_'+id).textContent=msg||'';$('#'+id).setAttribute('aria-invalid',!!msg);if(msg)bad.push(id)}
+/* read a number: {min, max, int, gt} */
+function num(id,o={}){const el=$('#'+id),raw=el.value.trim();let m='';const v=Number(raw);
+ if(raw===''&&o.opt){setErr(id,'');return undefined}
+ if(raw==='')m='Please enter a number.';
+ else if(!isFinite(v))m='That is not a valid number.';
+ else if(o.gt!==undefined&&v<=o.gt)m=`Must be greater than ${o.gt}.`;
+ else if(o.min!==undefined&&v<o.min)m=`Must be ${o.min} or more.`;
+ else if(o.max!==undefined&&v>o.max)m=`Must be ${o.max} or less.`;
+ else if(o.int&&!Number.isInteger(v))m='Use a whole number.';
+ setErr(id,m);return m?null:v}
+function done(ok,items,note){
+ if(ok&&!bad.length&&!items.length)return done(0);
+ $('#out')?.remove();
+ if(bad.length){$('#'+bad[0]).focus();bad=[];return}
+ $('#form').insertAdjacentHTML('beforeend',`<div class="out" id="out" aria-live="polite"><h3>Result</h3><div class="res">${items.map(([l,v],i)=>`<div style="--i:${i}"><small>${l}</small><strong>${v}</strong></div>`).join('')}</div>${note?`<p class="note">${note}</p>`:''}</div>`);
+ $('#out').scrollIntoView({behavior:'smooth',block:'nearest'})}
+const actions=`<div class="btns"><button class="btn p" type="submit">Calculate</button><button class="btn s" type="reset">Clear</button></div>`;
+
+/* ---------- SLOC ---------- */
+const sloc={title:'SLOC estimate',sub:'Effort and cost from lines of code.',
+html:()=>`<fieldset><legend>Project inputs</legend><div class="grid">
+${F('loc','Total lines of code (LOC)','Estimated size of the project','min="0"')}
+${F('p','Productivity (LOC per person-month)','Optional, for example 620','min="0"')}
+${F('r','Labor rate ($ per person-month)','Optional','min="0"')}
+${F('n','Number of developers','Optional, whole number','min="1" step="1"')}</div></fieldset>`,
+run(){const L=num('loc',{gt:0}),P=num('p',{gt:0,opt:true}),R=num('r',{min:0,opt:true}),N=num('n',{min:1,int:true,opt:true});
+ if(P===undefined&&!bad.length)setErr('p','Productivity is needed to calculate effort.');
+ if(bad.length)return done();const E=L/P,o=[['Total effort',fmt(E)+' person-months']];
+ if(N!==undefined)o.push(['Duration',fmt(E/N)+' months']);
+ if(R!==undefined)o.push(['Total cost',money(E*R)],['Cost per LOC',money(R/P)]);
+ done(1,o,'Results that need an empty field are not shown.')}};
+
+/* ---------- Function Points ---------- */
+const FPP=[['EI','External Inputs',[3,4,6]],['EO','External Outputs',[4,5,7]],['EQ','External Inquiries',[3,4,6]],['ILF','Internal Logical Files',[7,10,15]],['EIF','External Interface Files',[5,7,10]]];
+const LANG=[['128','C (128)'],['64','C++ (64)'],['54','C# (54)'],['46','Java (46)'],['56','JavaScript (56)'],['24','Python (24)']];
+const TCF=['Data communications','Distributed processing','Performance','Heavily used configuration','Transaction rate','Online data entry','End-user efficiency','Online update','Complex processing','Reusability','Installation ease','Operational ease','Multiple sites','Ease of change'];
+const fp={title:'Function Point analysis',sub:'Size from user functionality, then code and cost.',
+html:()=>`<fieldset><legend>1. Counts</legend>${seg('cm',[['one','Single count'],['three','Three-point (O / R / P)']])}
+${FPP.map(([k,n,w])=>`<div class="row"><div class="name">${k}<small>${n}</small></div><div><div class="cnt" id="cnt_${k}">
+<div class="one">${F(k+'_c','Count','Optional','min="0"')}</div>
+<div class="tri">${F(k+'_o','Optimistic','','min="0"')}</div><div class="tri">${F(k+'_r','Realistic','','min="0"')}</div><div class="tri">${F(k+'_p','Pessimistic','','min="0"')}</div>
+</div><div style="margin-top:.6rem">${S(k+'_w','Complexity',O([[w[0],`Simple (${w[0]})`],[w[1],`Average (${w[1]})`],[w[2],`Complex (${w[2]})`]],w[1]))}</div></div></div>`).join('')}</fieldset>
+<fieldset><legend>2. Technical complexity</legend>${seg('tm',[['sum','Enter total'],['each','Rate 14 factors']])}
+<div id="tsum">${F('tsum_v','Sum of factors (ΣFi)','Between 0 and 70','min="0" max="70"')}</div>
+<div class="drv" id="teach" hidden>${TCF.map((t,i)=>S('t'+i,t,O([0,1,2,3,4,5].map(x=>[x,x+(x==0?' none':x==5?' essential':'')]),3))).join('')}</div></fieldset>
+<fieldset><legend>3. Language and cost</legend><div class="grid">
+${S('avc','Programming language (LOC per FP)','<option value="">Not set</option>'+O(LANG))}
+${F('prod','Productivity (FP per person-month)','Optional','min="0"')}
+${F('rate','Labor rate ($ per person-month)','Optional','min="0"')}</div></fieldset>`,
+init(){const sync=()=>{const m=$('input[name=cm]:checked').value;$$('.cnt').forEach(c=>c.classList.toggle('three',m==='three'));
+  const t=$('input[name=tm]:checked').value;$('#tsum').hidden=t!=='sum';$('#teach').hidden=t==='sum'};
+ $$('input[name=cm],input[name=tm]').forEach(e=>e.onchange=sync);sync()},
+run(){const three=$('input[name=cm]:checked').value==='three';let ufc=0,any=false;
+ FPP.forEach(([k,,w])=>{let c=0;
+  if(!three){const v=num(k+'_c',{min:0,opt:true});if(v){c=v}if(v!==undefined&&v!==null)any=true}
+  else{const vs=['_o','_r','_p'].map(x=>num(k+x,{min:0,opt:true})),n=vs.filter(v=>v!==undefined).length;
+   if(n>0&&n<3&&!vs.includes(null))setErr(k+'_o','Fill all three values or leave the row empty.');
+   else if(n===3&&!vs.includes(null)){const[o,r,p]=vs;
+    if(o<=r&&r<=p){c=(o+4*r+p)/6;any=true}else setErr(k+'_r','Use optimistic ≤ realistic ≤ pessimistic.')}}
+  ufc+=c*Number($('#'+k+'_w').value)});
+ let sum;if($('input[name=tm]:checked').value==='sum')sum=num('tsum_v',{min:0,max:70});else sum=TCF.reduce((a,_,i)=>a+Number($('#t'+i).value),0);
+ const prod=num('prod',{gt:0,opt:true}),rate=num('rate',{min:0,opt:true});
+ if(!bad.length&&!any)setErr(three?'EI_o':'EI_c','Enter at least one count.');
+ if(bad.length)return done();
+ const tcf=.65+.01*sum,FP=ufc*tcf,avc=$('#avc').value,o=[['UFC',fmt(ufc)],['TCF',fmt(tcf)],['Function points',fmt(FP)]];
+ if(avc)o.push(['Estimated LOC',fmt(FP*Number(avc))]);
+ if(prod!==undefined){o.push(['Total effort',fmt(FP/prod)+' person-months']);
+  if(rate!==undefined)o.push(['Cost per FP',money(rate/prod)],['Total cost',money(FP*rate/prod)])}
+ done(1,o,'Results that need an empty field are not shown.')}};
+
+/* ---------- COCOMO ---------- */
+const MODES=[['3.2,1.05','Organic (C 3.2, K 1.05)'],['3,1.12','Semi-detached (C 3.0, K 1.12)'],['2.8,1.2','Embedded (C 2.8, K 1.20)']];
+const LV=['Very low','Low','Nominal','High','Very high','Extra high'];
+const DR=[['Required reliability',[.75,.88,1,1.15,1.4,0]],['Database size',[0,.94,1,1.08,1.16,0]],['Product complexity',[.7,.85,1,1.15,1.3,1.65]],['Execution time constraint',[0,0,1,1.11,1.3,1.66]],['Main storage constraint',[0,0,1,1.06,1.21,1.56]],['Virtual machine volatility',[0,.87,1,1.15,1.3,0]],['Computer turnaround time',[0,.87,1,1.07,1.15,0]],['Analyst capability',[1.46,1.19,1,.86,.71,0]],['Applications experience',[1.29,1.13,1,.91,.82,0]],['Programmer capability',[1.42,1.17,1,.86,.7,0]],['Virtual machine experience',[1.21,1.1,1,.9,0,0]],['Language experience',[1.14,1.07,1,.95,0,0]],['Modern programming practices',[1.24,1.1,1,.91,.82,0]],['Use of software tools',[1.24,1.1,1,.91,.83,0]],['Schedule constraint',[1.23,1.08,1,1.04,1.1,0]]];
+const cocomo={title:'COCOMO',sub:'Effort from size and project type.',
+html:()=>`<fieldset><legend>Project inputs</legend>${seg('u',[['loc','I have LOC'],['kloc','I have KLOC']])}<div class="grid">
+${F('size','Size','Converted to KLOC automatically','min="0"')}${S('mode','Project mode',O(MODES,'3,1.12'))}</div></fieldset>
+<fieldset><legend>Model</legend><label class="chk"><input type="checkbox" id="inter"> Use Intermediate COCOMO (15 cost drivers)</label>
+<div class="drv" id="drv" hidden>${DR.map(([n,v],i)=>S('d'+i,n,O(v.map((x,j)=>x?[x,`${LV[j]} (${x})`]:null).filter(Boolean),1))).join('')}</div></fieldset>`,
+init(){$('#inter').onchange=e=>$('#drv').hidden=!e.target.checked},
+run(){let s=num('size',{gt:0});if(bad.length)return done();
+ const kloc=$('input[name=u]:checked').value==='loc'?s/1000:s,[C,K]=$('#mode').value.split(',').map(Number),Ei=C*Math.pow(kloc,K);
+ const out=[['KLOC',fmt(kloc)],['Initial effort (Ei)',fmt(Ei)+' person-months']];
+ if($('#inter').checked){const eaf=DR.reduce((a,_,i)=>a*Number($('#d'+i).value),1);out.push(['EAF',eaf.toFixed(3)],['Final effort (E)',fmt(Ei*eaf)+' person-months'])}
+ done(1,out)}};
+
+/* ---------- app shell ---------- */
+const CALC={sloc:[sloc,'01'],fp:[fp,'02'],cocomo:[cocomo,'03']};
+$('#choices').innerHTML=Object.entries(CALC).map(([k,[c]],i)=>`<button class="choice rise" style="--i:${i+2}" data-k="${k}" type="button"><span><b>${c.title}</b><small>${c.sub}</small></span></button>`).join('');
+function open(k){const c=CALC[k][0];$('#home').hidden=true;$('#calc').hidden=false;
+ $('#form').innerHTML=`<h2 class="rise">${c.title}</h2><p class="lead rise" style="--i:1">${c.sub}</p><form id="frm" novalidate class="rise" style="--i:2">${c.html()}${actions}</form>`;
+ c.init&&c.init();
+ const f=$('#frm');f.onsubmit=e=>{e.preventDefault();bad=[];c.run()};
+ f.onreset=()=>setTimeout(()=>{$$('.field.bad').forEach(x=>x.classList.remove('bad'));$$('.err').forEach(x=>x.textContent='');$('#out')?.remove();c.init&&c.init()});
+ f.addEventListener('input',e=>{if(e.target.type==='number'&&e.target.id)setErr(e.target.id,'')});
+ window.scrollTo({top:0,behavior:'smooth'})}
+$('#choices').onclick=e=>{const b=e.target.closest('.choice');if(b)open(b.dataset.k)};
+$('#back').onclick=()=>{$('#calc').hidden=true;$('#home').hidden=false;window.scrollTo({top:0})};
+</script>
+</body>
+</html>
